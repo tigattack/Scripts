@@ -1,5 +1,6 @@
 #!/usr/local/bin/python3
-"""Get macOS CPU & GPU temps and fan speeds."""
+"""Get macOS CPU & GPU temps and fan speeds.
+This utility relies on https://github.com/hholtmann/smcFanControl/tree/master/smc-command"""
 
 # Imports
 import math
@@ -53,11 +54,9 @@ def fan_info():
     def fan_count() -> int:
         """Helper function to return the number of fans in the system."""
         # Query fans
-        query_result = subprocess.check_output(["/usr/local/bin/smc", "-f"]).decode("utf-8")
+        query_result = smc_query("FNum")
         # Parse output
-        query_result = query_result.split("\n", 1)[0]
-        # Parse output further, this time as an int
-        query_result = int(query_result.split(": ", 1)[1])
+        query_result = int(query_result.split("]", 1)[1].split("(", 1)[0].strip())
         # Return query
         return query_result
 
@@ -121,11 +120,8 @@ def cpu_temp() -> float:
     # Query CPU temperature
     temp = smc_query(SMC_KEYS["cpu_temp"])
 
-    # Parse output
-    temp = temp.split("]", 1)[1]
-
-    # Parse output further, this time as a float
-    temp = float(temp.split("(", 1)[0].strip())
+    # Parse output as float
+    temp = float(temp.split("]", 1)[1].split("(", 1)[0].strip())
 
     # Truncate result to 1 decimal place
     temp = truncate(temp, 1)
@@ -140,11 +136,8 @@ def gpu_temp() -> float:
     # Query GPU temperature
     temp = smc_query(SMC_KEYS["gpu_temp"])
 
-    # Parse output
-    temp = temp.split("]", 1)[1]
-
-    # Parse output further, this time as a float
-    temp = float(temp.split("(", 1)[0].strip())
+    # Parse output as float
+    temp = float(temp.split("]", 1)[1].split("(", 1)[0].strip())
 
     # Truncate result to 1 decimal place
     temp = truncate(temp, 1)
