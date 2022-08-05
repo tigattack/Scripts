@@ -1,3 +1,6 @@
+# MOVED TO [tigattack/Install-Telegraf-PoSH](https://github.com/tigattack/Install-Telegraf-PoSH/)
+---
+
 # Telegraf Deployment Script
 
 This is a Telegraf deployment script for Windows Server* environments.
