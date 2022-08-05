@@ -1,6 +1,10 @@
 #!/usr/local/bin/python3
-"""Get macOS CPU & GPU temps and fan speeds.
-This utility relies on https://github.com/hholtmann/smcFanControl/tree/master/smc-command"""
+"""
+Get macOS CPU & GPU temps and fan speeds.
+This utility relies on https://github.com/hholtmann/smcFanControl/tree/master/smc-command
+
+NOTICE: Moved to https://github.com/tigattack/macOS-hardware-stats
+"""
 
 # Imports
 import math
