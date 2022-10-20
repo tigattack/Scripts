@@ -1,12 +1,17 @@
 """Align all key/value pairs in a given INI file"""
 
 from copy import deepcopy
+from os.path import exists
 import sys
 
 # Set file path here
 if len(sys.argv) <= 1:
     print("Please specify a file path.")
     print(f"Example: {sys.argv[0]} /path/to/file.ini")
+    sys.exit(1)
+
+if not exists(sys.argv[1]):
+    print("Path does not exist.")
     sys.exit(1)
 
 file_path = sys.argv[1]
