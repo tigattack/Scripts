@@ -1,10 +1,15 @@
 """Align all key/value pairs in a given INI file"""
 
 from copy import deepcopy
+import sys
 
 # Set file path here
-file_path = ""
+if len(sys.argv) <= 1:
+    print("Please specify a file path.")
+    print(f"Example: {sys.argv[0]} /path/to/file.ini")
+    sys.exit(1)
 
+file_path = sys.argv[1]
 file_lines = open(file_path, "r", encoding="UTF-8").readlines()
 max_key_length = 0
 kv_line_numbers = []
