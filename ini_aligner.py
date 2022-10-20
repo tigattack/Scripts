@@ -28,7 +28,7 @@ for line in kv_line_numbers:
 
     numspaces = max_key_length - key_length
 
-    new_lines[line] = line_content[0] + (" " * numspaces) + "= " + line_content[1]
+    new_lines[line] = line_content[0].strip() + (" " * numspaces) + "= " + line_content[1]
 
 # Write new file contents
 with open(file_path, "w", encoding="UTF-8") as file:
