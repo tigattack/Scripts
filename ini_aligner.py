@@ -1,12 +1,14 @@
 """Align all key/value pairs in a given INI file"""
 
+from copy import deepcopy
+
 # Set file path here
 file_path = ""
 
 file_lines = open(file_path, "r", encoding="UTF-8").readlines()
 max_key_length = 0
 kv_line_numbers = []
-new_lines = file_lines
+new_lines = deepcopy(file_lines)
 
 # Find all k/v lines and add the line number to list
 for idx, line in enumerate(file_lines):
@@ -30,6 +32,11 @@ for line in kv_line_numbers:
 
     new_lines[line] = line_content[0].strip() + (" " * numspaces) + "= " + line_content[1].strip() + "\n"
 
-# Write new file contents
-with open(file_path, "w", encoding="UTF-8") as file:
-    file.writelines(new_lines)
+if new_lines != file_lines:
+    # Write new file contents
+    with open(file_path, "w", encoding="UTF-8") as file:
+        file.writelines(new_lines)
+
+    print(f"Aligned {file_path}")
+else:
+    print("No changes made; file is already aligned.")
