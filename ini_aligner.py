@@ -35,6 +35,11 @@ for idx, line in enumerate(file_lines):
 for line in kv_line_numbers:
     line_content = new_lines[line].split("=")
 
+    if len(line_content) > 2:
+        for idx, section in enumerate(line_content):
+            if idx > 1:
+                line_content[1] += line_content[idx]
+
     key_length = len(line_content[0].strip())
 
     numspaces = MAX_KEY_LENGTH - key_length
@@ -42,7 +47,7 @@ for line in kv_line_numbers:
     new_lines[line] = (
         line_content[0].strip()
         + (" " * numspaces)
-        + "= " + line_content[1].strip()
+        + " = " + line_content[1].strip()
         + "\n"
     )
 
