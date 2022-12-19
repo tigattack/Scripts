@@ -6,6 +6,19 @@
 
 # Usage: ./get_video_res.sh /path/to/file-or-directory
 
+# Return example:
+# Finding files in: ./A Perfect Planet
+# Found 5 video files in total.
+# File resolutions:
+# /Season 1/S01E01 Volcano (Bluray-2160p) (HDR).mkv: 3840x2160
+# /Season 1/S01E02 The Sun (Bluray-2160p) (HDR).mkv: 3840x2160
+# /Season 1/S01E03 Weather (Bluray-2160p) (HDR).mkv: 3840x2160
+# /Season 1/S01E04 Oceans (WEBDL-2160p) (HDR).mkv: 3840x2160
+# /Season 1/S01E05 Humans (WEBDL-2160p) (HDR).mkv: 3840x2160
+
+##########################################################################################
+
+
 video_regex="\.webm$|\.flv$|\.vob$|\.ogg$|\.ogv$|\.drc$|\.gifv$|\.mng$|\.avi$|\.mov$|\.qt$|\.wmv$|\.yuv$|\.rm$|\.rmvb$|/.asf$|\.amv$|\.mp4$|\.m4v$|\.mp*$|\.mkv$|\.svi$|\.3gp$|\.flv$|\.f4v$"
 
 path="$1"
