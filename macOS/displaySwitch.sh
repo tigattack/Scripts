@@ -1,18 +1,21 @@
-#!/bin/bash
+#!/bin/bash -x
 
 query=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
 debug=false
 
+# https://github.com/waydabber/m1ddc
+ddpath='/usr/local/bin/m1ddc'
+
 function setInput {
-	/usr/local/bin/ddcctl -d "$1" -i "$2"
+	$ddpath display "$1" set input "$2"
 }
 
 function setBrightness {
 	if [ "$2" -gt "100" ]; then
 		printft "\nERROR: Brightness cannot be greater than 100.\n\n"
 	else
-		/usr/local/bin/ddcctl -d "$1" -b "$2"
+		$ddpath display "$1" set luminance "$2"
 	fi
 }
 
@@ -20,12 +23,12 @@ function setContrast {
 	if [ "$2" -gt "100" ]; then
 		printft "\nERROR: Contrast cannot be greater than 100.\n\n"
 	else
-		/usr/local/bin/ddcctl -d "$1" -c "$2"
+		$ddpath display "$1" contrast "$2"
 	fi
 }
 
 
-numDisplays=$(/usr/local/bin/ddcctl 2>/dev/null | grep 'I:' | cut -c 10-10)
+numDisplays=$($ddpath display list 2>/dev/null | wc -l | xargs echo)
 
 if [ "$debug" = 'true' ]; then
 	printf '\nFound %s displays\n' "$numDisplays"
@@ -43,7 +46,7 @@ if [ "$query" = 'work' ]; then
 elif [ "$query" = 'mac' ]; then
 
 	input='49' # USB-C
-	contrast='100'
+	contrast='75'
 
 	if [ "$debug" = 'true' ]; then
 		printf 'Determined input should be set to USB-C (%s)\n' "$input"
@@ -74,5 +77,5 @@ do
 done
 
 if [ "$debug" != 'true' ]; then
-	echo "Set input and contrast for $numDisplays displays."
+	echo "Set input and contrast for $numDisplays display(s)."
 fi
