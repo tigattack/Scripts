@@ -30,6 +30,11 @@ function setContrast {
 
 numDisplays=$($ddpath display list 2>/dev/null | wc -l | xargs echo)
 
+if [ $numDisplays -lt 1]; then
+	echo "No displays found or error occured."
+	exit 1
+fi
+
 if [ "$debug" = 'true' ]; then
 	printf '\nFound %s displays\n' "$numDisplays"
 fi
@@ -77,5 +82,9 @@ do
 done
 
 if [ "$debug" != 'true' ]; then
-	echo "Set input and contrast for $numDisplays display(s)."
+	if [ $numDisplays == 1 ]; then
+		echo "Set input and contrast for $numDisplays display."
+	elif [ $numDisplays -gt 1 ]
+		echo "Set input and contrast for $numDisplays displays."
+	fi
 fi
