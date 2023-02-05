@@ -19,6 +19,17 @@ VRN = sys.argv[1]
 BASE_URL = 'https://www.celtictuning.co.uk'
 SEARCH_URL = BASE_URL + '/component/ctvc/search?dvla=' + VRN
 
+def vrn_error():
+    print(
+f"""A vehicle with registration "{VRN.upper()}" could not be found.
+Possible causes:
+- Incorrect registration.
+- Celtic Tuning does not have a tune for this vehicle.
+- Celtic Tuning could not be identify the vehicle based on
+  the information provided by the DVLA."""
+    )
+    sys.exit()
+
 search_response = requests.get(
   SEARCH_URL,
   timeout=5,
@@ -28,15 +39,7 @@ search_response = requests.get(
 redirect_url = search_response.headers['Location']
 
 if redirect_url == '/component/ctvc/#t3-content':
-    print(
-f"""A vehicle with registration "{VRN}" could not be found.
-Possible causes:
-- Incorrect registration.
-- Celtic Tuning does not have a tune for this vehicle.
-- Celtic Tuning could not be identify the vehicle based on
-  the information provided by the DVLA."""
-    )
-    sys.exit()
+    vrn_error()
 
 data_url = BASE_URL + redirect_url
 
@@ -46,6 +49,9 @@ data_response = requests.get(
 )
 
 soup = BeautifulSoup(data_response.content, "html.parser")
+
+if 'Please select variant' in soup.text:
+    vrn_error()
 
 # Parse remap data
 map_data_divs = soup.find_all("div", class_="ctvc_gauge_text")
