@@ -92,8 +92,8 @@ print(f"""Found vehicle: {vehicle_title}
 Stock power:  {stock_power} BHP
 Mapped power: {mapped_power} BHP
 
-Stock torque:  {stock_torque}
-Mapped torque: {mapped_torque}
+Stock torque:  {stock_torque} lb/ft
+Mapped torque: {mapped_torque} lb/ft
 
-Power increase:  {power_diff}
-Torque increase: {torque_diff}""")
+Power increase:  {power_diff} BHP
+Torque increase: {torque_diff} lb/ft""")
