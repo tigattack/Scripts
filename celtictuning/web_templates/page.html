@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+  <head>
+    <style>
+      .loader {
+        border: 16px solid #f3f3f3;
+        border-top: 16px solid #3498db;
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+        display: none;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      #result {
+        white-space: pre;
+        font-family: monospace;
+      }
+    </style>
+    <!--Jquery Cdn -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"
+            integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+            crossorigin="anonymous"></script>
+    <script>
+      $SCRIPT_ROOT = {{ request.script_root|tojson }};
+    </script>
+    <script type="text/javascript">
+      function toggle_loading(){
+          var x = document.getElementById("loader");
+
+          if (x.style.display === "none" || x.style.display == "") {
+            x.style.display = "block";
+          }
+          else {
+            x.style.display = "none";
+          }
+      }
+
+      function clear_result(){
+          var x = document.getElementById("result");
+          x.innerHTML = "";
+      }
+
+      $(document).on('submit','#vrn-form',function(e) {
+        e.preventDefault();
+        clear_result();
+        $('#result').text(
+          'Fetching data for VRN ' + $("#vrn").val().toUpperCase() + '...'
+        );
+        toggle_loading();
+
+        $.get($SCRIPT_ROOT + '/get_vehicle_pretty', {
+          vrn: $("#vrn").val()
+        }, function(data) {
+          $('#result').html(data.replace(/\n/g, '<br>'));
+          toggle_loading();
+        });
+        return false;
+      });
+      </script>
+  </head>
+  <body>
+    <div>
+      <form method="GET" id="vrn-form">
+        <label>Vehicle Registration:</label><br>
+        <input type="search" name="vrn" id="vrn">
+        <button type="submit">Send iiit</button>
+      </form>
+    </div>
+
+    <div id="result-container">
+      <p id="result">{{ text if text is defined }}</p>
+    </div>
+    <div class="loader" id="loader" display="none"></div>
+  </body>
+</html>
