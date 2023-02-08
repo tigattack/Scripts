@@ -9,14 +9,6 @@ from . import Celtic
 template_dir = os.path.abspath('./web_templates')
 app = Flask(__name__, template_folder=template_dir)
 
-def render_page(text: str = ''):
-    """Just a silly little wrapper for flask's render_template"""
-    if len(text) > 0:
-        text = Markup(text.replace('  ', '&nbsp;&nbsp;').replace('\n', '<br>'))
-        return render_template('page.html', text=text)
-
-    return render_template('page.html')
-
 def vehicle_info(vrn: str) -> str:
     """Just a silly little wrapper for my Celtic class"""
     try:
@@ -34,7 +26,7 @@ def interactive_request():
     Function for web interface.
     'Interface' is a bit of a stretch but just go with it.
     """
-    return render_page()
+    return render_template('page.html')
 
 
 @app.route('/get_vehicle_pretty')
