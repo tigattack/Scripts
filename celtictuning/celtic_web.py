@@ -4,7 +4,7 @@ import os
 from flask import Flask, render_template, request
 from flask.wrappers import Response
 
-from . import Celtic
+from Celtic import Celtic
 
 template_dir = os.path.abspath('./web_templates')
 app = Flask(__name__, template_folder=template_dir)
@@ -19,7 +19,7 @@ def respond_error(error_text: str):
 def vehicle_info(vrn: str):
     """Just a silly little wrapper for my Celtic class"""
     try:
-        celtic = Celtic.Celtic(vrn)
+        celtic = Celtic(vrn)
     except ValueError as err:
         return respond_error(str(err))
 
@@ -61,3 +61,6 @@ def api_responder():
             return empty_vrn_error()
 
     return vehicle_info(vrn)
+
+if __name__ == "__main__":
+    app.run()
