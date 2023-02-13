@@ -1,5 +1,6 @@
 """Get remap data from Celtic Tuning"""
 
+from enum import Enum
 import requests
 from bs4 import BeautifulSoup
 
@@ -17,21 +18,22 @@ from bs4 import BeautifulSoup
 
 # Stretch: Get remap chart. Chart URL is available from 'a' element with class 'ctvc_chart_btn'.
 
+class CelticUnits(Enum):
+    """Enums to be consumed by Celtic class"""
+    POWER   = 'BHP'
+    TORQUE  = 'lb/ft'
+
 class Celtic:
     """Get vehicle information and remap estimates from Celtic Tuning."""
     def __init__(self, vrn: str):
-        self.units = {
-            'power': 'BHP',
-            'torque': 'lb/ft'
-        }
         self.vrn = vrn
-        self.bad_vrn = False
+        self.is_bad_vrn = False
 
         bad_vrn_message = (
             f"Error: A vehicle with registration \"{self.vrn.upper()}\" could not be found.\n\n" +
             "Possible causes:\n" +
             "- Incorrect registration.\n" +
-            "- Celtic Tuning does not have a tune for this vehicle.\n" +
+            "- Celtic Tuning does not offer a tune for this vehicle.\n" +
             "- Celtic Tuning could not be identify the vehicle based on the "
             "information provided by the DVLA."
         )
@@ -52,9 +54,11 @@ class Celtic:
         if redirect_path == '/component/ctvc/#t3-content':
             raise ValueError(bad_vrn_message)
 
+        self.result_url = base_url + redirect_path
+
         # Get vehicle info page and return as BeautifulSoup object
         data_response = requests.get(
-            base_url + redirect_path,
+            self.result_url,
             timeout=5
         )
         self.vehicle_page_content = BeautifulSoup(data_response.content, "html.parser")
@@ -73,12 +77,24 @@ class Celtic:
             result_texts.append(element_text.text.strip())
 
         remap_data = {}
-        remap_data.update({'stock_power': result_texts[0]})
-        remap_data.update({'mapped_power': result_texts[1]})
-        remap_data.update({'power_diff': result_texts[2].lstrip('+')})
-        remap_data.update({'stock_torque': result_texts[3]})
-        remap_data.update({'mapped_torque': result_texts[4]})
-        remap_data.update({'torque_diff': result_texts[5].lstrip('+')})
+        remap_data.update(
+            {'power_stock': f"{result_texts[0]} {CelticUnits.POWER.value}"}
+        )
+        remap_data.update(
+            {'power_mapped': f"{result_texts[1]} {CelticUnits.POWER.value}"}
+        )
+        remap_data.update(
+            {'power_diff': f"{result_texts[2]} {CelticUnits.POWER.value}"}
+        )
+        remap_data.update(
+            {'torque_stock': f"{result_texts[3]} {CelticUnits.TORQUE.value}"}
+        )
+        remap_data.update(
+            {'torque_mapped': f"{result_texts[4]} {CelticUnits.TORQUE.value}"}
+        )
+        remap_data.update(
+            {'torque_diff': f"{result_texts[5]} {CelticUnits.TORQUE.value}"}
+        )
 
         return remap_data
 
@@ -96,23 +112,26 @@ class Celtic:
 
         rows = vehicle_data_table.find_all('li') # type: ignore
         for row in rows:
-            row_text = row.text.strip().replace('\n', ' ').replace('  ', '')
-            row_text = row_text.split(':')
-            vehicle_data.update({row_text[0]: row_text[1]})
+            row_text    = row.text.strip().replace('\n', ' ').replace('  ', '')
+            row_text    = row_text.split(':')
+            row_key     = row_text[0].replace(' ', '_').lower()
+            row_value   = row_text[1]
+            vehicle_data.update({row_key: row_value})
 
         return vehicle_data
 
 
     def get_all(self) -> dict:
         """Return dict of all data points"""
-        remap_data    = self.get_remap_data()
-        vehicle_title = self.get_vehicle_title()
+        remap_data      = self.get_remap_data()
+        vehicle_title   = self.get_vehicle_title()
         vehicle_detail  = self.get_vehicle_detail()
 
         return {
-            'remap_data': remap_data,
-            'vehicle_title': vehicle_title,
-            'vehicle_detail': vehicle_detail
+            'remap_data':     remap_data,
+            'vehicle_title':  vehicle_title,
+            'vehicle_detail': vehicle_detail,
+            'result_url':     self.result_url
         }
 
 
@@ -129,8 +148,9 @@ class Celtic:
                 max_key_length = len(key)
 
         for key,value in vehicle_detail.items():
-            spaces = max_key_length - len(key)
-            vehicle_detail_pretty += f'{key}: {" " * spaces}{value}\n'
+            key_pretty = key.replace('_', ' ').title()
+            spaces = max_key_length - len(key_pretty)
+            vehicle_detail_pretty += f'{key_pretty}: {" " * spaces}{value}\n'
         vehicle_detail_pretty = vehicle_detail_pretty.rstrip('\n')
 
         pretty_info = (
@@ -138,12 +158,13 @@ class Celtic:
             "== VEHICLE DATA ==\n" +
             f"{vehicle_detail_pretty}\n\n" +
             "== REMAP DATA ==\n" +
-            f"Stock power:  {remap_data['stock_power']} {self.units['power']}\n" +
-            f"Mapped power: {remap_data['mapped_power']}  {self.units['power']}\n\n" +
-            f"Stock torque:  {remap_data['stock_torque']}  {self.units['torque']}\n" +
-            f"Mapped torque: {remap_data['mapped_torque']} {self.units['torque']}\n\n" +
-            f"Power increase:  {remap_data['power_diff']}  {self.units['power']}\n" +
-            f"Torque increase: {remap_data['torque_diff']} {self.units['torque']}"
+            f"Stock power:  {remap_data['power_stock']}\n" +
+            f"Mapped power: {remap_data['power_mapped']}\n\n" +
+            f"Stock torque:  {remap_data['torque_stock']}\n" +
+            f"Mapped torque: {remap_data['torque_mapped']}\n\n" +
+            f"Power increase:  {remap_data['power_diff']}\n" +
+            f"Torque increase: {remap_data['torque_diff']}\n" +
+            f"Result URL: {self.result_url}"
         )
 
         return pretty_info
