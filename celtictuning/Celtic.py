@@ -163,7 +163,7 @@ class Celtic:
             f"Stock torque:  {remap_data['torque_stock']}\n" +
             f"Mapped torque: {remap_data['torque_mapped']}\n\n" +
             f"Power increase:  {remap_data['power_diff']}\n" +
-            f"Torque increase: {remap_data['torque_diff']}\n" +
+            f"Torque increase: {remap_data['torque_diff']}\n\n" +
             f"Result URL: {self.result_url}"
         )
 
