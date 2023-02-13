@@ -1,3 +1,7 @@
+<!--
+  Please don't read this file, it's truly disgusting.
+  Thanks!
+-->
 <!DOCTYPE html>
   <head>
     <style>
@@ -20,46 +24,174 @@
         white-space: pre;
         font-family: monospace;
       }
+
+      .tg {
+        border-collapse: collapse;
+        border-spacing: 0;
+        display: inline;
+        margin-right: 10px;
+      }
+
+      .tg td {
+        border-color: black;
+        border-style: solid;
+        border-width: 1px;
+        padding: 10px 10px 10px 5px;
+      }
+
+      .tg th {
+        text-align: left;
+        border-color: black;
+        border-style: solid;
+        border-width: 1px;
+        padding: 10px 10px 10px 5px;
+      }
+
+      @media screen and (max-width: 767px) {
+        .tg {
+          width: auto !important;
+        }
+
+        .tg col {
+          width: auto !important;
+        }
+      }
     </style>
     <!--Jquery Cdn -->
     <script src="https://code.jquery.com/jquery-3.5.1.js"
             integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
             crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json2html/2.2.1/json2html.min.js"></script>
     <script>
       $SCRIPT_ROOT = {{ request.script_root|tojson }};
     </script>
     <script type="text/javascript">
       function toggle_loading(){
-          var x = document.getElementById("loader");
+          let anim = document.getElementById("loader");
+          let text = document.getElementById("info-text");
 
-          if (x.style.display === "none" || x.style.display == "") {
-            x.style.display = "block";
+          if (anim.style.display === "none" || anim.style.display == "") {
+            anim.style.display = "block";
           }
           else {
-            x.style.display = "none";
+            anim.style.display = "none";
+          }
+
+          if (text.innerText === "") {
+            text.innerText = "Fetching data for VRN " + $("#vrn").val().toUpperCase() + "..."
+          }
+          else {
+            text.innerText = ""
           }
       }
 
       function clear_result(){
-          var x = document.getElementById("result");
+          var x = document.getElementById("result-container");
           x.innerHTML = "";
       }
+
+      let json2html_options  = {method: "append"}
+      let json2html_template_vehicledata = {"<>":"table","class":"tg","html":[
+          {"<>":"thead","html":[
+              {"<>":"tr","html":[
+                  {"<>":"th","colspan":"2","style":"text-align: center;","html":"Vehicle Data"}
+                ]}
+            ]},
+          {"<>":"tbody","html":[
+              {"<>":"tr","html":[
+                  {"<>":"th","html":"Model"},
+                  {"<>":"td","html":"${model}"}
+                ]},
+              {"<>":"tr","html":[
+                  {"<>":"th","html":"Variant"},
+                  {"<>":"td","html":"${variant}"}
+                ]},
+              {"<>":"tr","html":[
+                  {"<>":"th","html":"Year"},
+                  {"<>":"td","html":"${year}"}
+                ]},
+              {"<>":"tr","html":[
+                  {"<>":"th","html":"Fuel"},
+                  {"<>":"td","html":"${fuel}"}
+                ]},
+              {"<>":"tr","html":[
+                  {"<>":"th","html":"Engine Size"},
+                  {"<>":"td","html":"${engine_size}"}
+                ]},
+              {"<>":"tr","html":[
+                  {"<>":"th","html":"ECU Type"},
+                  {"<>":"td","html":"${ecu_type}"}
+                ]}
+            ]}
+      ]};
+      let json2html_template_remapdata = {"<>":"table","class":"tg","html":[
+        {"<>":"thead","html":[
+            {"<>":"tr","html":[
+                {"<>":"th","colspan":"4","style":"text-align: center;","html":"Remap Estimate"}
+              ]}
+          ]},
+          {"<>":"thead","html":[
+              {"<>":"tr","html":[
+                  {"<>":"th","html":""},
+                  {"<>":"th","html":"Stock"},
+                  {"<>":"th","html":"Remapped"},
+                  {"<>":"th","html":"Difference"}
+                ]}
+            ]},
+          {"<>":"tbody","html":[
+              {"<>":"tr","html":[
+                  {"<>":"th","html":"Power"},
+                  {"<>":"td","html":"${power_stock}"},
+                  {"<>":"td","html":"${power_mapped}"},
+                  {"<>":"td","html":"${power_diff}"}
+                ]},
+              {"<>":"tr","html":[
+                  {"<>":"th","html":"Torque"},
+                  {"<>":"td","html":"${torque_stock}"},
+                  {"<>":"td","html":"${torque_mapped}"},
+                  {"<>":"td","html":"${torque_diff}"}
+                ]}
+            ]}
+      ]};
 
       $(document).on('submit','#vrn-form',function(e) {
         e.preventDefault();
         clear_result();
-        $('#result').text(
-          'Fetching data for VRN ' + $("#vrn").val().toUpperCase() + '...'
-        );
         toggle_loading();
 
-        $.get($SCRIPT_ROOT + '/get_vehicle_pretty', {
+        $.getJSON($SCRIPT_ROOT + '/get_vehicle', {
           vrn: $("#vrn").val()
         }, function(data) {
-          $('#result').html(data.replace(/\n/g, '<br>'));
+          let container = $('#result-container');
+          container.append(
+            "<p>VRN <strong>" +
+            $("#vrn").val().toUpperCase() +
+            "</strong> resolved to <strong>" +
+            data.vehicle_title +
+            "</strong></p>"
+          );
+
+          container.json2html(
+            data.vehicle_detail,
+            json2html_template_vehicledata,
+            json2html_options
+          );
+          container.json2html(
+            data.remap_data,
+            json2html_template_remapdata,
+            json2html_options
+          );
+
+          container.append(
+            '<br><br><a href="' + data.result_url + '">See vehicle result at Celtic Tuning</a>'
+          )
+
           toggle_loading();
+        })
+        .fail(function(jqXHR) {
+          toggle_loading();
+          document.getElementById("info-text").innerText = jqXHR.responseText
         });
-        return false;
       });
       </script>
   </head>
@@ -72,8 +204,8 @@
       </form>
     </div>
 
+    <p id="info-text"></p>
     <div id="result-container">
-      <p id="result"></p>
     </div>
     <div class="loader" id="loader" display="none"></div>
   </body>
