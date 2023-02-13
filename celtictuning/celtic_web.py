@@ -9,15 +9,19 @@ from . import Celtic
 template_dir = os.path.abspath('./web_templates')
 app = Flask(__name__, template_folder=template_dir)
 
+def respond_error(error_text: str):
+    """Just a silly little wrapper for a wrapper (flask Response)"""
+    return Response(
+        error_text,
+        status=400,
+    )
+
 def vehicle_info(vrn: str):
     """Just a silly little wrapper for my Celtic class"""
     try:
         celtic = Celtic.Celtic(vrn)
     except ValueError as err:
-        return Response(
-            str(err),
-            status=400,
-        )
+        return respond_error(str(err))
 
     return celtic.get_all()
 
@@ -30,17 +34,30 @@ def index():
     return render_template('page.html')
 
 
-@app.route('/get_vehicle')
+@app.route('/get_vehicle', methods=['GET', 'POST'])
 def api_responder():
     """
     Function for API requests
     Example: GET app/get_vehicle?vrn=ab12cde
     """
 
-    if not request.args.get('vrn'):
-        return 'ERROR: vrn parameter missing or empty.'
+    def empty_vrn_error():
+        return respond_error('ERROR: vrn parameter missing or empty.')
 
-    vrn = request.args.get('vrn', '')
-    if len(vrn) == 0:
-        return 'Please provide a vehicle registration.'
+    if request.method == 'GET':
+        if not request.args.get('vrn'):
+            return empty_vrn_error()
+
+        vrn = request.args.get('vrn', '')
+        if len(vrn) == 0:
+            return empty_vrn_error()
+
+    elif request.method == 'POST':
+        if not request.form.get('vrn'):
+            return empty_vrn_error()
+
+        vrn = request.form.get('vrn', '')
+        if len(vrn) == 0:
+            return empty_vrn_error()
+
     return vehicle_info(vrn)
