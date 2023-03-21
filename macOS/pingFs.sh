@@ -1,16 +1,31 @@
 #!/bin/zsh
 
-# Utility script to determine closest server by latency.
-# Note: not very reusable; this was quickly put together for a single, specific use case.
+# Check that at least one argument was provided
+if [ "$#" -eq 0 ]; then
+  echo "Usage: $0 [list of endpoints to ping]"
+  exit 1
+fi
 
-endpoints=("$@")
-max=5
+# Initialize variables
+min_time=9999
+min_endpoint=""
 
-for i in {1..2}; do
-  t="$(ping -c 1 -i 0.5 ${endpoints[$i]} | sed -ne '/.*time=/{;s///;s/\..*//;p;}')"
-  if [ "$t" -lt "$max" ]; then
-    echo ${endpoints[$i]}
+# Loop over all provided endpoints
+for endpoint in "$@"; do
+  # Ping the endpoint and extract the round-trip time from the output
+  time=$(ping -c 1 -n "$endpoint" | ggrep -oP 'time=\K\d+(\.\d+)?')
+
+  # Check if the endpoint responded within the timeout and if its response time is lower than the current minimum
+  if [ -n "$time" ] && [ "$(bc <<< "$time < $min_time")" -eq 1 ]; then
+    min_time="$time"
+    min_endpoint="$endpoint"
   fi
 done
 
-# ./pingFs.sh fs1 fs2
+# Print the endpoint with the lowest response time
+if [ -n "$min_endpoint" ]; then
+  echo "$min_endpoint"
+else
+  echo "No endpoints responded within the timeout."
+  exit 1
+fi
